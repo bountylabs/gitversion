@@ -4,9 +4,12 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"os"
 	"os/exec"
 	"strings"
+	"time"
+
+	"github.com/bountylabs/log"
 )
 
 var path string
@@ -33,15 +36,27 @@ func main() {
 
 	flag.Parse()
 
+	//get commit hash
 	cmd := exec.Command("git", "--git-dir", repo+"/.git", "rev-parse", "HEAD")
 	bytes, err := cmd.CombinedOutput()
-	file_contents := fmt.Sprintf(Template, p, stripchars(string(bytes), "\r\n "))
+	if err != nil {
+		log.Errorln(err)
+		os.Exit(1)
+		return
+	}
 
+	//create template
+	file_contents := fmt.Sprintf(Template, p, stripchars(string(bytes), "\r\n "), time.Now().UnixNano())
+
+	//write template
 	if err = ioutil.WriteFile(path, []byte(file_contents), 0644); err != nil {
-		log.Fatal(err)
+		log.Errorln(err)
+		os.Exit(1)
 	}
 }
 
 var Template = `package %s
 
-var GIT_COMMIT_HASH = "%s"`
+var GIT_COMMIT_HASH = "%s"
+var GENERATED = %d
+`
