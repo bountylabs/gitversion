@@ -15,12 +15,13 @@ import (
 var path string
 var repo string
 var p string
+var short bool
 
 func init() {
 	flag.StringVar(&path, "o", "version.go", "filename")
 	flag.StringVar(&repo, "i", ".", "repository")
 	flag.StringVar(&p, "p", "version", "package")
-
+	flag.BoolVar(&short, "s", false, "--s")
 }
 
 func stripchars(str, chr string) string {
@@ -36,8 +37,15 @@ func main() {
 
 	flag.Parse()
 
-	//get commit hash
-	cmd := exec.Command("git", "--git-dir", repo+"/.git", "rev-parse", "HEAD")
+	//get commit hash (short or not)
+	cmd := func() *exec.Cmd {
+		if short {
+			return exec.Command("git", "--git-dir", repo+"/.git", "rev-parse", "--short", "HEAD")
+		}
+
+		return exec.Command("git", "--git-dir", repo+"/.git", "rev-parse", "HEAD")
+	}()
+
 	bytes, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Errorln(err)
