@@ -75,5 +75,5 @@ var tmpl = template.Must(template.New("gitversion").Parse(`package {{.Pkg}}
 
 var GIT_COMMIT_HASH = "{{.Git}}"
 var CIRCLE_BUILD_NUM = "{{.Build}}"
-var GENERATED = {{.Tstamp}}
+var GENERATED int64 = {{.Tstamp}}
 `))
